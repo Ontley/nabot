@@ -2,6 +2,7 @@ import discord
 from discord.ext import commands
 import json
 from random import choice
+from os import getcwd
 
 
 class MiscUtils(commands.Cog):
@@ -23,7 +24,7 @@ class MiscUtils(commands.Cog):
         mentions = message.mentions
         targets = [mtn for mtn in mentions] if mentions else [message.author]
 
-        filepath = 'C:/Users/leola/Desktop/Leo/Coding/Python/DISCORD_BOT/nWordCount.json'
+        filepath = f'{getcwd()}/nWordCount.json'
         with open(filepath, 'r') as json_file:
             nword_count = json.load(json_file)
 
