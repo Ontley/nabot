@@ -9,6 +9,7 @@ class MiscUtils(commands.Cog):
     def __init__(self, client):
         self.client = client
         self.dick_sizes = ['smol', 'non-existant', 'tiny', 'MEGA DONG', 'big']
+        self.nword_filepath = f'{getcwd()}/nWordCount.json'
 
     @commands.command()
     async def ping(self, ctx):
@@ -52,28 +53,26 @@ class MiscUtils(commands.Cog):
             '''
             if 'nigga' in msgtext or 'nigger' in msgtext:
                 user = str(message.author.id)
-                filepath = 'C:/Users/leola/Desktop/Leo/Coding/Python/DISCORD_BOT/nWordCount.json'
-                with open(filepath, 'r') as json_file:
+                with open(self.nword_filepath, 'r') as json_file:
                     nword_count = json.load(json_file)
                     if user in nword_count: 
                         nword_count[user] += msgtext.count('nigga') + msgtext.count('nigger')
                     else:
                         nword_count[user] = msgtext.count('nigga') + msgtext.count('nigger')
 
-                with open(filepath, 'w') as json_file:
+                with open(self.nword_filepath, 'w') as json_file:
                     json_file.write(json.dumps(nword_count))
 
             if msgtext == 'black lives matter':
                 user = str(message.author.id)
-                filepath = 'C:/Users/leola/Desktop/Leo/Coding/Python/DISCORD_BOT/nWordCount.json'
-                with open(filepath, 'r') as json_file:
+                with open(self.nword_filepath, 'r') as json_file:
                     nword_count = json.load(json_file)
                     if user in nword_count: 
                         nword_count[user] -= 1
                     else:
                         nword_count[user] = -1
 
-                with open(filepath, 'w') as json_file:
+                with open(self.nword_filepath, 'w') as json_file:
                     json_file.write(json.dumps(nword_count))
 
 

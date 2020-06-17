@@ -60,7 +60,8 @@ class Timeout(commands.Cog):
                 self.timeouts[channel] = [timeout]
 
             def check(message):
-                return message.content in {'++unoreverse', '++reverse'} and message.channel == channel
+                return (message.content in {'++unoreverse', '++reverse'}
+                        and message.channel == channel)
             try:
                 await self.client.wait_for('message', check=check, timeout=7)
                 if channel in self.timeouts:
