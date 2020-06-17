@@ -68,7 +68,7 @@
             "fields": [
             {
                 "name": "**Mute**",
-                "value": "`++mute [user_ids] <duration> <reason>`\nMutes users for the specified duration, if duration if ommited, permanent mute"
+                "value": "`++mute [user_ids] <duration> <reason>`\nMutes users for the specified duration, if duration isn't given, permanent mute\nDuration formats:\n    `<number>s`: seconds\n    `<number>m`: minutes\n    `<number>h`: hours\n    `<number>d`: days"
                 },
             {
                 "name": "**Unmute**",

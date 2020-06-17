@@ -58,10 +58,12 @@ class AdminUtils(commands.Cog):
                 break
         duration = get_total_time(times)
 
+        print(user_ids)
         users = []
         user_names = []
         for user_id in user_ids:
             user = ctx.guild.get_member(user_id)
+            print(user)
             users.append(user)
             user_names.append(user.display_name)
         user_names = ', '.join(user_names)
