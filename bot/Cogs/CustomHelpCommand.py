@@ -44,7 +44,7 @@ class CustomHelpCommand(commands.Cog):
 
     @commands.command()
     async def help(self, ctx, command_class = 'empty', page = 1):
-        if ctx.author.top_role.name not in admin_roles and command_class == 'Admin Utils':
+        if ctx.author.top_role.name not in admin_roles and command_class == 'admin':
             await ctx.send(f'You are not permitted to view this category')
         else:
             with open(f"{getcwd()}/help_commands_file.json", 'r') as help_file:
