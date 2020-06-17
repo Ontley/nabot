@@ -73,8 +73,9 @@ class Timeout(commands.Cog):
 
     @commands.command(aliases = ['reverse'])
     async def unoreverse(self, ctx):
-        if not self.timeouts[ctx.message.channel]:
-            await ctx.send('No timeouts available to reverse')
+        if ctx.message.channel in self.timeouts:
+            if not self.timeouts[ctx.message.channel]:
+                await ctx.send('No timeouts available to reverse')
 
     @commands.Cog.listener()
     @is_not_admin()
