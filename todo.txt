@@ -1,0 +1,21 @@
+NEW FEATURES:
+    add command not found
+
+    help function
+        add page reaction system
+
+    send random .bat *malware* files
+        ghost rat file
+
+    send random songs from vojko v
+
+    implement cogs for nword, misc, util, and admin commands
+
+    make global constants
+
+    make log a class object
+
+
+BUGS:
+    nwords
+        sends 0 nwords
