@@ -80,12 +80,11 @@ class AdminUtils(commands.Cog):
     @commands.has_any_role(*admin_roles)
     async def unmute(self, ctx, *user_ids):
         for user_id in user_ids:
-            user = ctx.guild.get_role(user_id)
+            user = ctx.guild.get_member(int(user_id))
             if user.top_role.id == mute_role_id:
                 await user.remove_roles(self.mute_role)
             else:
                 await ctx.send(f'{user.display_name} is not muted')
-            print(user_ids, user)
 
 def setup(client):
     client.add_cog(AdminUtils(client))
