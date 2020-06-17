@@ -85,6 +85,7 @@ class AdminUtils(commands.Cog):
                 await user.remove_roles(self.mute_role)
             else:
                 await ctx.send(f'{user.display_name} is not muted')
+            print(user_ids, user)
 
 def setup(client):
     client.add_cog(AdminUtils(client))
