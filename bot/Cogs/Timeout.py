@@ -47,6 +47,7 @@ class Timeout(commands.Cog):
     def __init__(self, client):
         self.client = client
         self.timeouts = {}
+        self.timeouts_count = {}
 
     @commands.command()
     async def timeout(self, ctx):
@@ -55,9 +56,14 @@ class Timeout(commands.Cog):
         if message.author.id != self.client.user.id:
             timeout = TimeoutObject(message.author, channel)
             try:
-                self.timeouts[channel].append(timeout)
+                if self.timeouts_count[message.author] < 3:
+                    self.timeouts[channel].append(timeout)
+                    self.timeouts_count[message.author.id] += 1
+                else:
+                    await ctx.send(f'You already have 3 timeouts active')
             except:
                 self.timeouts[channel] = [timeout]
+                self.timeouts_count[message.author.id] = 1
 
             def check(message):
                 return (message.content in {'++unoreverse', '++reverse'}
@@ -66,7 +72,9 @@ class Timeout(commands.Cog):
                 await self.client.wait_for('message', check=check, timeout=7)
                 if channel in self.timeouts:
                     if self.timeouts[channel]:
-                        await self.timeouts[channel][0].execute(timeout.user_origin, reverseflag = 1)
+                        timeout_obj = self.timeouts[channel][0]
+                        await timeout_obj.execute(timeout_obj.user_origin, reverseflag = 1)
+                        self.timeouts_count[timeout_obj.user_origin.id] -= 1
                         del self.timeouts[channel][0]
 
             except asyncio.TimeoutError:
@@ -90,9 +98,10 @@ class Timeout(commands.Cog):
 
             if channel in self.timeouts:
                 if self.timeouts[channel]:
-                    for i in range(len(self.timeouts[channel])):
-                        if message.author != self.timeouts[channel][i].user_origin:
-                            await self.timeouts[channel][i].execute(message.author)
+                    for i, timeout_obj in enumerate(self.timeouts[channel]):
+                        if message.author != timeout_obj.user_origin:
+                            await timeout_obj.execute(message.author)
+                            self.timeouts_count[timeout_obj.user_origin.id] -= 1
                             del self.timeouts[channel][i]
                         else:
                             print(f'own bypass for {message.author.display_name}')
