@@ -16,7 +16,6 @@ def get_extensions(directory):
     for entry in listdir(directory):
         if not entry.startswith('__') and not entry == 'utils':
             entry_path = f'{directory}/{entry}'
-            print(entry_path)
             if isdir(entry_path):
                 extensions += get_extensions(entry_path)
             else:
@@ -24,7 +23,6 @@ def get_extensions(directory):
     return extensions
 
 cogs = get_extensions('./bot/Cogs')
-print(cogs)
 for entry in cogs:
     cog = entry.replace("/", ".").lstrip(".")
     client.load_extension(f'{cog}')
