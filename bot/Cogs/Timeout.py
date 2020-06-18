@@ -54,15 +54,17 @@ class Timeout(commands.Cog):
         message = ctx.message
         channel = message.channel
         if message.author.id != self.client.user.id:
-            timeout = TimeoutObject(message.author, channel)
-            try:
-                if self.timeouts_count[message.author] < 3:
-                    self.timeouts[channel].append(timeout)
+            if message.author.id in self.timeouts_count:
+                if self.timeouts_count[message.author.id] < 3:
+                    timeout_obj = TimeoutObject(message.author, channel)
+                    self.timeouts[channel].append(timeout_obj)
                     self.timeouts_count[message.author.id] += 1
+                    print(self.timeouts_count[message.author.id])
                 else:
                     await ctx.send(f'You already have 3 timeouts active')
-            except:
-                self.timeouts[channel] = [timeout]
+            else:
+                timeout_obj = TimeoutObject(message.author, channel)
+                self.timeouts[channel] = [timeout_obj]
                 self.timeouts_count[message.author.id] = 1
 
             def check(message):
