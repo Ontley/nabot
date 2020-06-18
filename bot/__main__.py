@@ -14,7 +14,7 @@ client.remove_command('help')
 def get_extensions(directory):
     extensions = []
     for entry in listdir(directory):
-        if not entry.startswith('__'):
+        if not entry.startswith('__') and not entry == 'utils':
             entry_path = f'{directory}/{entry}'
             if isdir(entry_path):
                 extensions += get_extensions(entry_path)
@@ -22,8 +22,8 @@ def get_extensions(directory):
                 extensions.append(entry.rstrip('.py'))
     return extensions
 
-print(get_extensions('./bot/Cogs'))
-# for extension in extensions:
-#     client.load_extension(f'bot.Cogs.{extension}')
+cogs = get_extensions('./bot/Cogs')
+for cog in cogs:
+    client.load_extension(f'bot.Cogs.{cog}')
 
-# client.run('NzE1MTg0MjQ2NzYzMDI4NTky.Xs5n6w.f_DAY0zPVW1sHKeOx7PoqpVguAE')
+client.run('NzE1MTg0MjQ2NzYzMDI4NTky.Xs5n6w.f_DAY0zPVW1sHKeOx7PoqpVguAE')
