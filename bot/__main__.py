@@ -27,4 +27,4 @@ for entry in cogs:
     cog = entry.replace("/", ".").lstrip(".")
     client.load_extension(f'{cog}')
 
-client.run('NzE1MTg0MjQ2NzYzMDI4NTky.Xs5n6w.f_DAY0zPVW1sHKeOx7PoqpVguAE')
+client.run('NzE1MTg0MjQ2NzYzMDI4NTky.XuyvWQ.v1_K0TPysVpNH3jgBeYnj0WJXeU')
