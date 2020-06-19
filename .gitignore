@@ -2,3 +2,5 @@ __pycache__/
 todo.txt
 __init__.py
 .vscode
+token.txt
+*.code-workspace

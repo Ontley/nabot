@@ -14,7 +14,7 @@ client.remove_command('help')
 def get_extensions(directory):
     extensions = []
     for entry in listdir(directory):
-        if not entry.startswith('__') and not entry == 'utils':
+        if not entry.startswith('__') and entry != 'utils':
             entry_path = f'{directory}/{entry}'
             if isdir(entry_path):
                 extensions += get_extensions(entry_path)
@@ -27,4 +27,6 @@ for entry in cogs:
     cog = entry.replace("/", ".").lstrip(".")
     client.load_extension(f'{cog}')
 
-client.run('NzE1MTg0MjQ2NzYzMDI4NTky.XuyvWQ.v1_K0TPysVpNH3jgBeYnj0WJXeU') # replace with token.txt and add token.txt to .gitignore
+with open('token.txt', 'r') as token_file:
+    token = token_file.readlines().strip()
+    client.run(token)
