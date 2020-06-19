@@ -27,4 +27,4 @@ for entry in cogs:
     cog = entry.replace("/", ".").lstrip(".")
     client.load_extension(f'{cog}')
 
-client.run('NzE1MTg0MjQ2NzYzMDI4NTky.XuyvWQ.v1_K0TPysVpNH3jgBeYnj0WJXeU')
+client.run('NzE1MTg0MjQ2NzYzMDI4NTky.XuyvWQ.v1_K0TPysVpNH3jgBeYnj0WJXeU') # replace with token.txt and add token.txt to .gitignore
