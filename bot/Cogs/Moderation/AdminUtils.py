@@ -3,7 +3,7 @@ from discord.ext import commands
 from re import match
 import asyncio
 from bot.constants import highest_admin_role_id, mute_role_id, admin_roles
-from bot.Cogs.Moderation.utils import time as t
+from bot.Cogs.utils import time as t
 
 
 class AdminUtils(commands.Cog):
