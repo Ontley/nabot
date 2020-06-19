@@ -4,4 +4,4 @@ __init__.py
 .vscode
 *.txt
 *.code-workspace
-*.json
+nWordCount.json
