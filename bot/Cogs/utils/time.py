@@ -15,7 +15,7 @@ def get_total_time(times):
     return total
 
 
-async def shorten_time(seconds):
+def shorten_time(seconds):
     minutes, seconds = divmod(seconds, 60)
     hours, minutes = divmod(minutes, 60)
     days, hours = divmod(hours, 24)

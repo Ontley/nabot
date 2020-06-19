@@ -3,7 +3,7 @@ from discord.ext import commands
 from re import match
 import asyncio
 from bot.constants import highest_admin_role_id, mute_role_id, admin_roles
-from bot.Cogs.utils import time as t
+from bot.Cogs.utils import time
 
 
 class AdminUtils(commands.Cog):
@@ -26,7 +26,7 @@ class AdminUtils(commands.Cog):
             else:
                 #reason = ' '.join(args[i: ])
                 break
-        duration = t.get_total_time(times)
+        duration = time.get_total_time(times)
 
         print(user_ids)
         users = []
