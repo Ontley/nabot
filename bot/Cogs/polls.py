@@ -19,7 +19,7 @@ class Poll:
         self.allow_multi = allow_multi
         self.user_votes = {}
         embed = discord.Embed(
-            title = title,
+            title = f'Question: {title}',
             description = f'Lasts for {time.shorten_time(duration)}\nid {_id}',
             colour = 16747116
             )
