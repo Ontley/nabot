@@ -95,9 +95,6 @@ class Timeout(commands.Cog):
     async def on_message(self, message):
         if message.author != self.client.user:
             channel = message.channel
-
-            # This mutes the next person if the message isn't a command
-
             if channel in self.timeouts:
                 if self.timeouts[channel]:
                     for i, timeout_obj in enumerate(self.timeouts[channel]):
