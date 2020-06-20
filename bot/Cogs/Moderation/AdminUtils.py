@@ -38,21 +38,22 @@ class AdminUtils(commands.Cog):
             user_names.append(user.display_name)
         user_names = ', '.join(user_names)
 
-        self.mute_role = ctx.guild.get_role(mute_role_id)
+        mute_role = ctx.guild.get_role(mute_role_id)
         for user in users:
-            await user.add_roles(self.mute_role)
+            await user.add_roles(mute_role)
         if duration:
             await asyncio.sleep(duration)
             for user in users:
-                await user.remove_roles(self.mute_role)
+                await user.remove_roles(mute_role)
 
     @commands.command()
     @commands.has_any_role(*admin_roles)
     async def unmute(self, ctx, *user_ids):
+        mute_role = ctx.guild.get_role(mute_role_id)
         for user_id in user_ids:
             user = ctx.guild.get_member(int(user_id))
             if user.top_role.id == mute_role_id:
-                await user.remove_roles(self.mute_role)
+                await user.remove_roles(mute_role)
             else:
                 await ctx.send(f'{user.display_name} is not muted')
 
