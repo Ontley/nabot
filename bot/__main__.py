@@ -28,5 +28,5 @@ for entry in cogs:
     client.load_extension(f'{cog}')
 
 with open('token.txt', 'r') as token_file:
-    token = token_file.readlines().strip()
+    token = token_file.readlines()[0].strip()
     client.run(token)
