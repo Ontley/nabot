@@ -102,9 +102,10 @@ class Timeout(commands.Cog):
                 if self.timeouts[channel]:
                     for i, timeout_obj in enumerate(self.timeouts[channel]):
                         if message.author != timeout_obj.user_origin:
+                            del self.timeouts[channel][i]
                             await timeout_obj.execute(message.author)
                             self.timeouts_count[timeout_obj.user_origin.id] -= 1
-                            del self.timeouts[channel][i]
+                            break
                         else:
                             print(f'own bypass for {message.author.display_name}')
 
