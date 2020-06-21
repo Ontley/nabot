@@ -17,5 +17,10 @@ class Setup(commands.Cog):
 
         pass # remove this
 
+    @commands.Cog.listener()
+    async def on_command_error(self, ctx, error):
+        if isinstance(error, commands.CommandNotFound):
+            await ctx.send(f'Command {ctx.command.name} not found')
+
 def setup(client):
     client.add_cog(Setup(client))
