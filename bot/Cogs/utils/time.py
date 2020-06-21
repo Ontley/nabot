@@ -22,18 +22,18 @@ def shorten_time(seconds):
     time_str = ''
     if days > 1:
         time_str += f'{days} days '
-    else:
+    elif days == 1:
         time_str += f'{days} day '
     if hours > 1:
         time_str += f'{hours} hours '
-    else:
+    elif hours == 1:
         time_str += f'{hours} hour '
     if minutes > 1:
         time_str += f'{minutes} minutes '
-    else:
+    elif minutes == 1:
         time_str += f'{minutes} minute '
     if seconds > 1:
         time_str += f'{seconds} seconds '
-    else:
+    elif seconds == 1:
         time_str += f'{seconds} second '
     return time_str
