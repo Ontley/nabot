@@ -1,10 +1,6 @@
 import discord
 from discord.ext import commands
-from random import choice
-import json
-import asyncio
-from re import findall, match
-from os import getcwd, listdir
+from os import listdir
 from os.path import isdir
 
 
@@ -19,7 +15,7 @@ def get_extensions(directory):
             if isdir(entry_path):
                 extensions += get_extensions(entry_path)
             else:
-                extensions.append(entry_path.rstrip('.py'))
+                extensions.append(entry_path[: -3])
     return extensions
 
 cogs = get_extensions('./bot/Cogs')
@@ -29,4 +25,4 @@ for entry in cogs:
 
 with open('token.txt', 'r') as token_file:
     token = token_file.readlines()[0].strip()
-    client.run(token)
+client.run(token)
