@@ -57,5 +57,9 @@ class AdminUtils(commands.Cog):
             else:
                 await ctx.send(f'{user.display_name} is not muted')
 
+    @commands.Cog.listener()
+    async def on_member_join(self, ctx):
+        pass
+
 def setup(client):
     client.add_cog(AdminUtils(client))
