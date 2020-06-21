@@ -13,7 +13,7 @@ class MiscUtils(commands.Cog):
 
     @commands.command()
     async def ping(self, ctx):
-        await ctx.send(f'Pong! {self.client.latency*1000}ms')
+        await ctx.send(f'Pong! {round(self.client.latency*1000)}ms')
 
     @commands.command()
     async def dicksize(self, ctx):
@@ -21,6 +21,7 @@ class MiscUtils(commands.Cog):
 
     @commands.command()
     async def nwords(self, ctx):
+        '''Command that allows you to check your own, or someone else's nword count'''
         message = ctx.message
         mentions = message.mentions
         targets = [mtn for mtn in mentions] if mentions else [message.author]
@@ -46,11 +47,8 @@ class MiscUtils(commands.Cog):
     @commands.Cog.listener()
     async def on_message(self, message):
         msgtext = message.content
-
         if message.author != self.client.user:
-            '''
-            The n-word counter
-            '''
+            '''The n-word counter, TODO: set this up as db logic'''
             if 'nigga' in msgtext or 'nigger' in msgtext:
                 user = str(message.author.id)
                 with open(self.nword_filepath, 'r') as json_file:
@@ -64,6 +62,7 @@ class MiscUtils(commands.Cog):
                     json_file.write(json.dumps(nword_count))
 
             if msgtext == 'black lives matter':
+                '''Removes one from your nword counter if you truly support BLM TODO: set up as db logic'''
                 user = str(message.author.id)
                 with open(self.nword_filepath, 'r') as json_file:
                     nword_count = json.load(json_file)

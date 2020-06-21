@@ -4,6 +4,9 @@ import asyncio
 from bot.constants import highest_admin_role_id, mute_role_id, admin_roles
 
 
+'''Explanation: if the command timeout is activated, any person that sends ANY message into that channel will get muted
+BUT: if the command reverse or unoreverse is sent in the short period (can be set) after the timeout command, the person that started the timeout gets muted'''
+
 class TimeoutObject:
     def __init__(self, user_origin, channel, mute_time=120):
         self.user_origin = user_origin
@@ -22,6 +25,7 @@ class TimeoutObject:
         await self.log_channel.send(string)
 
     async def execute(self, target, uno_reverse = 0):
+        '''Executes, mutes the person that was specified, uno_reverse bool for different messages on execute'''
         if not uno_reverse:
             print(f'\n        {target.display_name} timed out\n')
             await self.channel.send(f'{target} got fucked')
@@ -33,7 +37,8 @@ class TimeoutObject:
         await target.remove_roles(self.mute_role)
 
 
-def is_not_admin():
+def is_not_admin(): 
+    '''Custom broken decorator '''
     def predicate(ctx):
         if ctx.author.top_role > ctx.guild.get_role(highest_admin_role_id):
             return True
@@ -51,6 +56,7 @@ class Timeout(commands.Cog):
 
     @commands.command()
     async def timeout(self, ctx):
+        '''Creates the timeout object, TODO: move handling stuff to own function'''
         message = ctx.message
         channel = message.channel
         if message.author.id != self.client.user.id:
@@ -84,6 +90,7 @@ class Timeout(commands.Cog):
 
     @commands.command(aliases = ['reverse'])
     async def unoreverse(self, ctx):
+        '''Handles cases where reverse/unoreverse command is sent before after expiry or after execution'''
         try:
             if not self.timeouts[ctx.message.channel]:
                 await ctx.send('No timeouts available to reverse')
@@ -93,6 +100,7 @@ class Timeout(commands.Cog):
     @commands.Cog.listener()
     @is_not_admin()
     async def on_message(self, message):
+        '''Executes the timeout if someone sends a message in the channel'''
         if message.author != self.client.user:
             channel = message.channel
             if channel in self.timeouts:

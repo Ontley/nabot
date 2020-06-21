@@ -8,6 +8,7 @@ client = commands.Bot(command_prefix = '++')
 client.remove_command('help')
 
 def get_extensions(directory):
+    '''Gets a list of the cogs'''
     extensions = []
     for entry in listdir(directory):
         if not entry.startswith('__') and entry != 'utils':
@@ -18,6 +19,7 @@ def get_extensions(directory):
                 extensions.append(entry_path[: -3])
     return extensions
 
+'''Loads cogs'''
 cogs = get_extensions('./bot/Cogs')
 for entry in cogs:
     cog = entry.replace("/", ".").lstrip(".")

@@ -16,6 +16,7 @@ class HelpObject():
         self.embed = self.make_embed(command_class, page)
 
     def make_embed(self, commands_dict, page):
+        '''Makes the embed with the dictionary given by initialization'''
         help_commands_dict = commands_dict[f'Page {page}']
         help_commands_dict["author"]["name"] = self.ctx.me.display_name
         help_commands_dict["footer"]["text"] = f'{page}/{self.num_pages}'
@@ -26,6 +27,7 @@ class HelpObject():
         return embed
 
     async def send_help_msg(self):
+        '''Sends the help object's embed'''
         await self.ctx.send(embed=self.embed)
         self.message = self.ctx.channel.last_message
         if self.num_pages > 1:
@@ -33,6 +35,7 @@ class HelpObject():
                 await self.message.add_reaction(emoji)
 
     async def edit(self, new_page):
+        '''Edits the message embed with a newly created one, used in page control system'''
         new_embed = self.make_embed(self.command_class, new_page)
         await self.message.edit(embed=new_embed)
 
@@ -51,6 +54,7 @@ class CustomHelpCommand(commands.Cog):
                 commands_categories = json.load(help_file)
                 try:
                     commands_dict = commands_categories[command_class]
+
                     num_pages = len(commands_dict)
                     if page > num_pages:
                         page = num_pages
@@ -58,6 +62,8 @@ class CustomHelpCommand(commands.Cog):
                         page = 1
 
                     help_obj = HelpObject(ctx, command_class, commands_dict, page, num_pages)
+
+                    '''TODO: help_object_handler function for code below'''
                     self.help_messages[ctx.author.id] = help_obj
                     await help_obj.send_help_msg()
 
@@ -76,6 +82,7 @@ class CustomHelpCommand(commands.Cog):
 
     @commands.Cog.listener()
     async def on_raw_reaction_add(self, payload):
+        '''Page control system through reactions'''
         emoji = str(payload.emoji)
         member = payload.member
 

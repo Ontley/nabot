@@ -6,27 +6,32 @@ from bot.constants import mute_role_id, admin_roles
 from bot.Cogs.utils import time
 
 
-async def reapply_infractions(user_id):
-
-        # database stuff
-
-        # if active_infractions:
-        #     pass
-
-        pass # remove
-
-
 class Infractions(commands.Cog):
     def __init__(self, client):
         self.client = client
 
+    async def apply_mute(self, ctx, user_ids, duration):
+        mute_role = ctx.guild.get_role(mute_role_id)
+        for user_id in user_ids:
+            user = ctx.guild.get_member(user_id)
+            await user.add_roles(mute_role)
+
+        if duration:
+            await asyncio.sleep(duration)
+            for user_id in user_ids:
+                user = ctx.guild.get_member(user_id)
+                await user.remove_roles(mute_role)
+
     @commands.command()
     @commands.has_any_role(*admin_roles)
     async def mute(self, ctx, *args):
+        '''Mutes the users from the IDs provided'''
         user_ids = []
         times = []
+
+        '''Getting needed elements from the args'''
         for i in range(len(args)):
-            arg = args[i].strip('.,:\'\\<>[]\{\}()')
+            arg = args[i].strip('.,:\'\\<>[]{\}()')
             if match(r'\d+[smhd]{1}', arg):
                 times.append(arg)
 
@@ -37,28 +42,13 @@ class Infractions(commands.Cog):
                 #reason = ' '.join(args[i: ])
                 break
         duration = time.get_total_time(times)
-
-        print(user_ids)
-        users = []
-        user_names = []
-        for user_id in user_ids:
-            user = ctx.guild.get_member(user_id)
-            print(user)
-            users.append(user)
-            user_names.append(user.display_name)
-        user_names = ', '.join(user_names)
-
-        mute_role = ctx.guild.get_role(mute_role_id)
-        for user in users:
-            await user.add_roles(mute_role)
-        if duration:
-            await asyncio.sleep(duration)
-            for user in users:
-                await user.remove_roles(mute_role)
+        await self.apply_mute(ctx, user_ids, duration)
+        
 
     @commands.command()
     @commands.has_any_role(*admin_roles)
     async def unmute(self, ctx, *user_ids):
+        '''Unmutes all of the users from the IDs provided'''
         mute_role = ctx.guild.get_role(mute_role_id)
         for user_id in user_ids:
             user = ctx.guild.get_member(int(user_id))
@@ -69,7 +59,12 @@ class Infractions(commands.Cog):
 
     @commands.Cog.listener()
     async def on_member_join(self, ctx):
-        await reapply_infractions(ctx.author.id)
+        '''This reapplies mutes and other active infractions the user had if they left'''
+        # database stuff
+
+        # reapply the infractions
+
+        pass # remove
 
 def setup(client):
     client.add_cog(Infractions(client))

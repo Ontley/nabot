@@ -7,16 +7,19 @@ import asyncio
 
 
 class Poll:
+    '''Poll object because there's a lot here'''
     def __init__(self, title, options, _id, author, channel, duration, anon, allow_multi):
         self._id = _id
         self.title = title
         self.options = options
+        self.options_stats = {i: 0 for i in range(len(self.options))}
         self.author = author
         self.channel = channel
         self.duration = duration
-        self.anon = anon
+        self.anon = anon 
         self.allow_multi = allow_multi
         self.all_votes = {}
+        self.total_votes = 0
         embed = discord.Embed(
             title = f'Question: {title}',
             description = f'Lasts for {time.shorten_time(duration)}\nid {_id}',
@@ -32,12 +35,7 @@ class Poll:
         self.embed = embed
 
     async def add_vote(self, user, option):
-        if option not in self.options:
-            if option > len(self.options):
-                if not self.anon:
-                    await self.channel.send(f'The option {option} doesn\'t exist')
-                    return
-
+        '''Handles all of the voting, anonymous and multivote stuff'''
         if self.allow_multi:
             if user.id in self.all_votes:
                 if option in self.all_votes[user.id]:
@@ -46,8 +44,12 @@ class Poll:
 
                 else:
                     self.all_votes[user.id].append(option)
+                    self.options_stats[option] += 1
+                    self.total_votes += 1
             else:
                 self.all_votes[user.id] = [option]
+                self.options_stats[option] += 1
+                self.total_votes += 1
 
         else:
             if user.id in self.all_votes:
@@ -55,9 +57,17 @@ class Poll:
                 return
             else:
                 self.all_votes[user.id] = [option]
+                self.options_stats[option] += 1
+                self.total_votes += 1
+
+    async def remove_vote(self, user_id, option):
+        self.all_votes[user_id].remove(option)
+        self.options_stats[option] -= 1
+        self.total_votes -= 1
 
 
     async def send_poll(self):
+        '''Sends the poll in it's channel'''
         await self.channel.send(embed = self.embed)
         self.message = self.channel.last_message
         if len(self.options) <= 10:
@@ -66,20 +76,7 @@ class Poll:
 
 
     async def end(self):
-        total_votes = sum([len(votes) for votes in list(self.all_votes.values())])
-        options_stats = {i: {'votes': 0, 'percent': 0} for i in range(len(self.options))}
-
-        for user_votes in list(self.all_votes.values()):
-            for vote in user_votes:
-                options_stats[vote]['votes'] += 1
-
-        for i in range(len(options_stats)):
-            option_votes = options_stats[i]['votes']
-            try:
-                options_stats[i]['percent'] = option_votes/total_votes*100
-            except ZeroDivisionError:
-                options_stats[i]['percent'] = 0
-
+        '''Ends the poll, sending an embed with the results'''
         end_embed = discord.Embed(
             title = f'Poll ended: {self.title}',
             colour = 16747116
@@ -90,8 +87,12 @@ class Poll:
             )
         
         for i in range(len(self.options)):
-            option_votes = options_stats[i]['votes']
-            option_percentage = options_stats[i]['percent']
+            option_votes = self.options_stats[i]
+            try:
+                option_percentage = option_votes/self.total_votes
+            except ZeroDivisionError:
+                option_percentage = 0
+
             end_embed.add_field(
                 name = f'Option {i+1} ({option_votes} votes, {option_percentage}%)',
                 value = self.options[i],
@@ -105,8 +106,18 @@ class Polls(commands.Cog):
         self.client = client
         self.active_polls = {}
 
+    async def poll_handler(self, poll, ctx):
+        '''Sends the poll made and creates the timers for it'''
+        await poll.send_poll()
+        self.active_polls[ctx.author.id] = poll
+        await asyncio.sleep(poll.duration)
+        if poll in list(self.active_polls.values()):
+            await poll.end()
+            del self.active_polls[ctx.author.id]
+
     @commands.command(aliases=['poll'])
     async def makepoll(self, ctx):
+        '''Creates a poll and passes it to the poll_handler function'''
         if ctx.author.id in self.active_polls:
             await ctx.send(f'{ctx.author.display_name}, you already have a poll active')
             return
@@ -118,25 +129,20 @@ class Polls(commands.Cog):
         info = findall(r"\"[\w\d ?!.,:;]+\"", msgtext)
         info = [element.strip('"') for element in info]
         title = info[0]
-        options = info[1: ]
-        times = findall(r'\d+[smhd]{1}', msgtext)
+        options = info[1: 11]
+        times = findall(r'\d+[smhd]{1}', msgtext) # will grab unwanted times from options and title, change this
         if times:
             duration = time.get_total_time(times)
         else:
             duration = 360
-
         anon = '-a' in msgtext or '-anon' in msgtext
         allow_multi = '-m' in msgtext or '-multiple' in msgtext
         poll = Poll(title, options, ctx.message.id,  ctx.author, ctx.channel, duration, anon, allow_multi)
-        await poll.send_poll()
-        self.active_polls[ctx.author.id] = poll
-        await asyncio.sleep(poll.duration)
-        if ctx.author.id in self.active_polls:
-            await poll.end()
-            del self.active_polls[ctx.author.id]
+        await self.poll_handler(poll, ctx)
 
     @commands.command()
     async def endpoll(self, ctx):
+        '''Allows the poll's creator to end the poll before it's timer stops'''
         if ctx.author.id not in self.active_polls:
             await ctx.send(f'{ctx.author.display_name}, you don\'t have an active poll')
             return
@@ -148,6 +154,7 @@ class Polls(commands.Cog):
     @commands.command()
     @commands.has_any_role(*admin_roles)
     async def forceend(self, ctx, _id):
+        '''Admins can force a poll to end because why not'''
         _id = int(_id)
         for _, poll in self.active_polls.items():
             print(f'{poll._id}\n{_id}\n{poll._id == _id}')
@@ -161,23 +168,26 @@ class Polls(commands.Cog):
 
     @commands.Cog.listener()
     async def on_raw_reaction_add(self, payload):
+        '''Adds a vote to the poll where the reaction was added'''
         if payload.member != self.client.user:
             emoji = str(payload.emoji)
             for poll in list(self.active_polls.values()):
                 if payload.message_id == poll.message.id:
-                    if len(poll.options) <= 10:
-                        if emoji in NUMBER_EMOJIS:
-                            emoji_index = NUMBER_EMOJIS.index(emoji)
-                            await poll.add_vote(payload.member, emoji_index)
-                            break
+                    if emoji in NUMBER_EMOJIS:
+                        emoji_index = NUMBER_EMOJIS.index(emoji)
+                        await poll.add_vote(payload.member, emoji_index)
+                        break
 
-    @commands.command()
-    async def vote(self, ctx, _id, option):
+    @commands.Cog.listener()
+    async def on_raw_reaction_remove(self, payload):
+        '''Removes the user's vote'''
+        emoji = str(payload.emoji)
         for poll in list(self.active_polls.values()):
-            if poll._id == _id:
-                if poll.anon:
-                    ctx.message.delete()
-                await poll.add_vote(ctx.author, option)
+            if payload.message_id == poll.message.id:
+                if emoji in NUMBER_EMOJIS:
+                    emoji_index = NUMBER_EMOJIS.index(emoji)
+                    await poll.remove_vote(payload.member.id, emoji_index)
+                    break
 
 
 def setup(client):
