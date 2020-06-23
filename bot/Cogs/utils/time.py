@@ -1,17 +1,20 @@
 import datetime
+from re import findall
 
-def get_total_time(times):
+
+def get_total_time(string):
+    '''Returns total seconds specified in string i.e. '1h 30m' is 5400 seconds'''
+    times = findall(r'\d+[smhd]{1}', string)
     total = 0
     for time in times:
         try:
-            total += int(time)
-        except ValueError:
-            try:
-                time_value = int(time[:-1])
-                time_multi = {'s': 1, 'm': 60, 'h': 3600, 'd': 86400}[time[-1]]
-                total += time_value * time_multi
-            except KeyError:
-                print('Mute dictionary key error, skipping current time request')
+            time_value = map(list, findall(r'\d+', time))
+            multi = findall(r'[smhd]{1}', time)
+            multipliers = {'s': 1, 'm': 60, 'h': 3600, 'd': 86400}
+            time_multi = multipliers[multi]
+            total += time_value * time_multi
+        except KeyError:
+            print('Mute dictionary key error, skipping current time request')
     return total
 
 
