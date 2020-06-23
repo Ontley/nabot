@@ -3,7 +3,6 @@ import discord
 from discord.ext import commands, tasks
 from re import match
 import asyncio
-# from bot.constants import mute_role_id, admin_roles
 from bot.Cogs.utils import time
 from bot.Cogs.utils import db_funcs
 from datetime import timedelta, datetime
@@ -29,8 +28,9 @@ async def disable_infraction(guild, user, _type):
 
 async def apply_infraction(guild, user, _type):
     if _type == 'mute':
-        # mute_role = guild.get_role(mute_role_id)
-        # await user.add_roles(mute_role)
+        mute_role_id = db_funcs.get_from_guild(guild, 'mute_role_id')
+        mute_role = guild.get_role(mute_role_id)
+        await user.add_roles(mute_role)
         pass
 
     elif _type == 'voicemute':
@@ -53,6 +53,7 @@ async def add_infraction(_id, guild, user, _type, duration, reason):
                     'reason': reason
                 }
             )
+    conn.commit()
     await apply_infraction(guild, user, _type)
 
 
@@ -117,7 +118,7 @@ class Infractions(commands.Cog):
                 
                 await apply_infraction(guild, user, _type)
 
-    @tasks.loop(seconds=10.0)
+    @tasks.loop(seconds=5.0)
     async def disable_expired_infractions(self):
         '''Checks if any infractions have expired every 5 seconds because I don't want to break my PC br running 500 coros'''
         expired_infractions = db_funcs.get_expired_infractions()
