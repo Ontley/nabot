@@ -1,4 +1,6 @@
 import sqlite3
+import json
+from os import getcwd
 
 
 conn = sqlite3.connect('discord_bot.db')
@@ -24,6 +26,22 @@ def create_tables():
         voice_mute_role_id integer,
         admin_role_ids text
     )""")
+
+def guild_init(guild_id):
+    c.execute("""INSERT INTO server_specific(guild_id, prefix, mute_role_id, voice_mute_role_id, admin_role_ids) 
+                VALUES (:g_id, :prefix, :m_role, :vm_role, :a_roles)""", 
+                {
+                    'g_id': guild_id,
+                    'prefix': '++',
+                    'm_role': 0,
+                    'vm_role': 0,
+                    'a_roles': '0'
+                })
+    conn.commit()
+    with open(f'{getcwd()}\\bot\\guild_log.json', 'r') as guild_log:
+        guilds_inits = json.load(guild_log)
+        new_inits = guilds_inits.append(guild_id)
+        guild_log.write(json.dumps(new_inits))
 
 def get_active_infractions():
     '''Grabs all active infractions from the database'''
@@ -62,3 +80,13 @@ def get_from_guild(guild_id, needed_value):
                     )
     rv = dict(c.fetchone())
     return rv[needed_value]
+
+def update_guild(guild_id, column, value):
+    c.execute(f"""UPDATE server_specific
+                SET {column}=:val
+                WHERE guild_id=:g_id""",
+                {
+                    'val': value,
+                    'g_id': guild_id
+                })
+    conn.commit()
