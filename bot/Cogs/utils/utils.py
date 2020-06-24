@@ -1,6 +1,7 @@
 import datetime
 from re import findall
-
+from discord.ext import commands
+import db_funcs
 
 def get_total_time(string):
     '''Returns total seconds specified in string i.e. '1h 30m' is 5400 seconds'''
@@ -40,3 +41,21 @@ def shorten_time(seconds):
     elif seconds == 1:
         time_str += f'{seconds} second '
     return time_str
+
+def is_admin(): 
+    async def predicate(ctx):
+        admin_role_ids = db_funcs.get_from_guild(ctx.guild.id, 'admin_role_ids').split(' ')
+        admin_roles = []
+        for role_id in admin_role_ids:
+            admin_roles.append(ctx.guild.get_role(role_id))
+
+        user_roles = ctx.author.roles
+        if any(u_role in admin_roles for u_role in user_roles):
+            return True
+        elif ctx.author == ctx.guild.owner or ctx.author.id == 258306791174176770: # dunno if I should keep the id bypass
+            return True
+
+        await ctx.send('You don\'t have the required role to do this!')
+        return False
+
+    return commands.check(predicate)
