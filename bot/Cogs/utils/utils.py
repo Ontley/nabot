@@ -1,7 +1,9 @@
 import datetime
 from re import findall
 from discord.ext import commands
-import db_funcs
+from bot.Cogs.utils import db_funcs
+from datetime import datetime
+
 
 def get_total_time(string):
     '''Returns total seconds specified in string i.e. '1h 30m' is 5400 seconds'''
@@ -42,6 +44,7 @@ def shorten_time(seconds):
         time_str += f'{seconds} second '
     return time_str
 
+
 def is_admin(): 
     async def predicate(ctx):
         admin_role_ids = db_funcs.get_from_guild(ctx.guild.id, 'admin_role_ids').split(' ')
@@ -58,4 +61,23 @@ def is_admin():
         await ctx.send('You don\'t have the required role to do this!')
         return False
 
+    return commands.check(predicate)
+
+
+timestamps = {}
+def event_cooldown(count, duration):
+    async def predicate(ctx):
+        global timestamps
+        user_id = ctx.author.id
+        if user_id in timestamps: # 1
+            oldest_delta = datetime.utcnow() - timestamps[user_id][0]
+            if oldest_delta.total_seconds() > duration: # 2
+                timestamps[user_id].pop()
+                return False
+
+            if len(timestamps[user_id]) >= count: # 3
+                return False
+
+        timestamps[user_id].append(datetime.utcnow())
+        return True
     return commands.check(predicate)
