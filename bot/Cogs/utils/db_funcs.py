@@ -27,6 +27,7 @@ def create_tables():
         admin_role_ids text
     )""")
 
+
 def guild_init(guild_id):
     c.execute("""INSERT INTO server_specific(guild_id, prefix, mute_role_id, voice_mute_role_id, admin_role_ids) 
                 VALUES (:g_id, :prefix, :m_role, :vm_role, :a_roles)""", 
@@ -38,27 +39,23 @@ def guild_init(guild_id):
                     'a_roles': '0'
                 })
     conn.commit()
-    with open(f'{getcwd()}\\bot\\guild_log.json', 'r') as guild_log:
+    with open(f'{getcwd()}\\bot\\guild_log.json', 'r+') as guild_log:
         guilds_inits = json.load(guild_log)
-        new_inits = guilds_inits.append(guild_id)
-        guild_log.write(json.dumps(new_inits))
+        guilds_inits.append(guild_id)
+        guild_log.seek(0)
+        guild_log.write(json.dumps(guilds_inits))
+        guild_log.truncate()
+    print(f'Constructed necessary elements for guild {guild_id} in database')
 
-def get_active_infractions():
-    '''Grabs all active infractions from the database'''
-    c.execute("""SELECT * 
-                        FROM infractions 
-                        WHERE (expires > datetime('now')) AND (type='mute' OR type='tempban')
-                        """)
-    rv = dict(c.fetchone())[0]
-    return rv
 
 def get_expired_infractions():
-    '''Grabs all active infractions from the database'''
+    '''Grabs all active expired from the database'''
     c.execute("""SELECT * 
                 FROM infractions 
                 WHERE active=1 AND (expires < datetime('now'))
                 """)
     return dict(c.fetchone())[0]
+
 
 def grab_user_infractions(user_id):
     '''Gets a user's active mute (can't be more than one) from the db'''
@@ -80,6 +77,7 @@ def get_from_guild(guild_id, needed_value):
                     )
     rv = dict(c.fetchone())
     return rv[needed_value]
+
 
 def update_guild(guild_id, column, value):
     c.execute(f"""UPDATE server_specific
