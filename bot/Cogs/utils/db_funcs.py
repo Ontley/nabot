@@ -10,10 +10,11 @@ c = conn.cursor()
 
 def create_tables():
     c.execute("""CREATE TABLE IF NOT EXISTS infractions (
-        _id integer,
+        id integer,
         active integer,
         guild_id integer,
         user_id integer,
+        admin integer,
         type text,
         expires text,
         reason text
@@ -24,19 +25,21 @@ def create_tables():
         prefix text,
         mute_role_id integer,
         voice_mute_role_id integer,
-        admin_role_ids text
+        admin_role_ids text,
+        moderator_role_ids text
     )""")
 
 
 def guild_init(guild_id):
-    c.execute("""INSERT INTO server_specific(guild_id, prefix, mute_role_id, voice_mute_role_id, admin_role_ids) 
-                VALUES (:g_id, :prefix, :m_role, :vm_role, :a_roles)""", 
+    c.execute("""INSERT INTO server_specific(guild_id, prefix, mute_role_id, voice_mute_role_id, admin_role_ids, moderator_role_ids) 
+                VALUES (:g_id, :prefix, :m_role, :vm_role, :a_roles, :mod_roles)""", 
                 {
                     'g_id': guild_id,
                     'prefix': '++',
                     'm_role': 0,
                     'vm_role': 0,
-                    'a_roles': '0'
+                    'a_roles': '0',
+                    'mod_roles': '0'
                 })
     conn.commit()
     with open(f'{getcwd()}\\bot\\guild_log.json', 'r+') as guild_log:
@@ -54,8 +57,11 @@ def get_expired_infractions():
                 FROM infractions 
                 WHERE active=1 AND (expires < datetime('now'))
                 """)
-    return dict(c.fetchone())[0]
-
+    found = c.fetchall()
+    rv = []
+    for infraction in found:
+        rv.append(dict(infraction))
+    return rv
 
 def grab_user_infractions(user_id):
     '''Gets a user's active mute (can't be more than one) from the db'''
@@ -77,14 +83,3 @@ def get_from_guild(guild_id, needed_value):
                     )
     rv = dict(c.fetchone())
     return rv[needed_value]
-
-
-def update_guild(guild_id, column, value):
-    c.execute(f"""UPDATE server_specific
-                SET {column}=:val
-                WHERE guild_id=:g_id""",
-                {
-                    'val': value,
-                    'g_id': guild_id
-                })
-    conn.commit()
