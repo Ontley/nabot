@@ -41,7 +41,7 @@ def shorten_time(seconds):
     return time_str
 
 
-def is_admin(): 
+def is_admin(reverse=0): 
     async def predicate(ctx):
         admin_role_ids = db_funcs.get_from_guild(ctx.guild.id, 'admin_role_ids').split(' ')
         if any(str(u_role.id) in admin_role_ids for u_role in ctx.author.roles):
@@ -52,6 +52,8 @@ def is_admin():
         await ctx.send('You don\'t have the required role to do this!')
         return False
 
+    if reverse:
+        return not commands.check(predicate)
     return commands.check(predicate)
 
 

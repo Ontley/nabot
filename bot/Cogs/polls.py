@@ -1,15 +1,15 @@
 import discord
 from discord.ext import commands
-from bot.Cogs.utils import time
+from bot.Cogs.utils.utils import is_admin, shorten_time, Command
 from re import findall
-from bot.constants import admin_roles, NUMBER_EMOJIS
+from bot.constants import NUMBER_EMOJIS
 import asyncio
 
 
 class Poll:
     '''Poll object because there's a lot here'''
     def __init__(self, title, options, _id, author, channel, duration, anon, allow_multi):
-        self._id = _id
+        self.id = _id
         self.title = title
         self.options = options
         self.options_stats = {i: 0 for i in range(len(self.options))}
@@ -22,7 +22,7 @@ class Poll:
         self.total_votes = 0
         embed = discord.Embed(
             title = f'Question: {title}',
-            description = f'Lasts for {time.shorten_time(duration)}\nid {_id}',
+            description = f'Lasts for {shorten_time(duration)}\nid {_id}',
             colour = 16747116
             )
         embed.set_author(
@@ -68,8 +68,7 @@ class Poll:
 
     async def send_poll(self):
         '''Sends the poll in it's channel'''
-        await self.channel.send(embed = self.embed)
-        self.message = self.channel.last_message
+        self.message = await self.channel.send(embed = self.embed)
         if len(self.options) <= 10:
             for i in range(len(self.options)):
                 await self.message.add_reaction(NUMBER_EMOJIS[i])
@@ -115,9 +114,11 @@ class Polls(commands.Cog):
             await poll.end()
             del self.active_polls[ctx.author.id]
 
-    @commands.command(aliases=['poll'])
-    async def makepoll(self, ctx):
-        '''Creates a poll and passes it to the poll_handler function'''
+    @commands.command(category='all', cls=Command)
+    async def poll(self, ctx):
+        '''Creates a poll lasting 10 minutes
+        Usage:
+        `{prefix}poll "This is the title" "Options one" "Options two"`'''
         if ctx.author.id in self.active_polls:
             await ctx.send(f'{ctx.author.display_name}, you already have a poll active')
             return
@@ -130,19 +131,17 @@ class Polls(commands.Cog):
         info = [element.strip('"') for element in info]
         title = info[0]
         options = info[1: 11]
-        times = findall(r'\d+[smhd]{1}', msgtext) # will grab unwanted times from options and title, change this
-        if times:
-            duration = time.get_total_time(times)
-        else:
-            duration = 360
+        duration = 600
         anon = '-a' in msgtext or '-anon' in msgtext
         allow_multi = '-m' in msgtext or '-multiple' in msgtext
         poll = Poll(title, options, ctx.message.id,  ctx.author, ctx.channel, duration, anon, allow_multi)
         await self.poll_handler(poll, ctx)
 
-    @commands.command()
+    @commands.command(category='all', cls=Command)
     async def endpoll(self, ctx):
-        '''Allows the poll's creator to end the poll before it's timer stops'''
+        '''Allows the poll's creator to end the poll before it's timer stops
+        Usage:
+        `{prefix}endpoll`'''
         if ctx.author.id not in self.active_polls:
             await ctx.send(f'{ctx.author.display_name}, you don\'t have an active poll')
             return
@@ -151,20 +150,24 @@ class Polls(commands.Cog):
         await poll.end()
         del self.active_polls[ctx.author.id]
 
-    @commands.command()
-    @commands.has_any_role(*admin_roles)
-    async def forceend(self, ctx, _id):
-        '''Admins can force a poll to end because why not'''
-        _id = int(_id)
+    @commands.command(category='moderation', cls=Command)
+    @is_admin()
+    async def forceend(self, ctx, poll_id):
+        '''Allows an admin to force end a poll given it's ID
+        Usage:
+        `{prefix}foreend 726826227717111818`'''
+        try:
+            poll_id = int(poll_id)
+        except ValueError:
+            await ctx.send(f'The argument passed is not a number')
         for _, poll in self.active_polls.items():
-            print(f'{poll._id}\n{_id}\n{poll._id == _id}')
-            if poll._id == _id:
+            if poll.id == poll_id:
                 await poll.end()
-                await ctx.send(f'admin force poll {_id} to end early')
+                await ctx.send(f'admin force poll {poll_id} to end early')
                 del self.active_polls[poll.author.id]
                 break
         else:
-            await ctx.send(f'Poll with id {_id} not found')
+            await ctx.send(f'Poll with id {poll_id} not found')
 
     @commands.Cog.listener()
     async def on_raw_reaction_add(self, payload):

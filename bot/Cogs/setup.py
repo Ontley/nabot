@@ -6,22 +6,28 @@ from bot.Cogs.Moderation import infractions
 from datetime import datetime
 from re import findall
 from bot.Cogs.utils import db_funcs, utils
+from bot.Cogs.utils.utils import Command
 import json
 from os import getcwd
 
 
 class Setup(commands.Cog):
+    '''Server setup commands'''
     def __init__(self, client):
         self.client = client
         self.conn = sqlite3.connect('discord_bot.db')
         self.conn.row_factory = sqlite3.Row
         self.c = self.conn.cursor()
 
-    @commands.command(aliases=['mrole', 'muterole'])
+    @commands.command(aliases=['mrole', 'mute_role'], category='setup', cls=Command)
     @utils.is_admin()
-    async def mute_role(self, ctx, m_role_id=None):
+    async def muterole(self, ctx, m_role_id=None):
+        '''Allows moderators to assign which role a user is given when given the mute infraction, or view the current one
+        Usage:
+        `{prefix}muterole 725311689418997771`
+        `{prefix}muterole` '''
         if '-r' in ctx.message.content:
-            db_funcs.update_guild(ctx.guild.id, 'mute_role_id', '0')
+            db_funcs.update_in_guild(ctx.guild.id, 'mute_role_id', '0')
             await ctx.send('Resetting the mute role')
             return
 
@@ -35,7 +41,7 @@ class Setup(commands.Cog):
             return
             
         if m_role_id:
-            db_funcs.update_guild(ctx.guild.id, 'mute_role_id', m_role_id)
+            db_funcs.update_in_guild(ctx.guild.id, 'mute_role_id', m_role_id)
             await ctx.send(f'Set role id {m_role_id} as mute role')
 
         else:
@@ -46,12 +52,16 @@ class Setup(commands.Cog):
             role_name = str(ctx.guild.get_role(curr_m_role))
             await ctx.send(f'The current mute role is: `{role_name}`')
 
-    @commands.command(aliases=['adminroles', 'admins', 'modroles', 'mods'])
+    @commands.command(category='setup', cls=Command)
     @utils.is_admin()
-    async def admin_roles(self, ctx):
+    async def admins(self, ctx):
+        '''Allows the owner to edit which roles have access to moderation commands, or view current ones
+        Usage:
+        `{prefix}admins 724609221148147834 725313041889230868`
+        `{prefix}` '''
         new_admin_role_ids = " ".join(findall(r'\d{18}', ctx.message.content))
         if '-r' in ctx.message.content:
-            db_funcs.update_guild(ctx.guild.id, 'admin_role_ids', '0')
+            db_funcs.update_in_guild(ctx.guild.id, 'admin_role_ids', '0')
             await ctx.send('Resetting admin roles')
             return
 
@@ -60,7 +70,7 @@ class Setup(commands.Cog):
             if curr_admin_role_ids != '0':
                 new_admin_role_ids = f'{curr_admin_role_ids} {new_admin_role_ids}'
 
-            db_funcs.update_guild(ctx.guild.id, 'admin_role_ids', new_admin_role_ids)
+            db_funcs.update_in_guild(ctx.guild.id, 'admin_role_ids', new_admin_role_ids)
 
         else:
             curr_admin_role_ids = db_funcs.get_from_guild(ctx.guild.id, 'admin_role_ids').split(' ')
@@ -76,12 +86,15 @@ class Setup(commands.Cog):
                 return
             await ctx.send('No moderator roles set, only server owner can execute moderator commands')
 
-    @commands.command()
+    @commands.command(category='setup', cls=Command)
     async def prefix(self, ctx, new_prefix=None):
+        '''Allows server owner to change my prefix for this server or view the current one
+        Usage:
+        `{prefix}prefix !!`
+        {prefix}prefix` '''
         if new_prefix:
-            admin_role_ids = db_funcs.get_from_guild(ctx.guild.id, 'admin_role_ids')
-            if any(role.id in admin_role_ids for role in ctx.author.roles):
-                db_funcs.update_guild(ctx.guild.id, 'prefix', new_prefix)
+            if ctx.author == ctx.guild.owner:
+                db_funcs.update_in_guild(ctx.guild.id, 'prefix', new_prefix)
                 await ctx.send(f'The new server prefix is: {new_prefix}')
                 
             else:
@@ -119,13 +132,6 @@ class Setup(commands.Cog):
             for bot_guild in self.client.guilds:
                 if bot_guild.id not in guilds_inited:
                     db_funcs.guild_init(bot_guild.id)
-    
-    @commands.Cog.listener()
-    async def on_command_error(self, ctx, error):
-        '''Sends 'command not found' if a wrong command is entered'''
-        if isinstance(error, commands.CommandNotFound):
-            command = ctx.message.content.split(' ')[0]
-            await ctx.send(f'Command `{command}` not found')
 
 
 def setup(client):

@@ -27,13 +27,15 @@ def get_extensions(directory):
                 extensions.append(entry_path[: -3])
     return extensions
 
-# cogs = get_extensions('./bot/Cogs')
-# for entry in cogs:
-#     cog = entry.replace("/", ".").lstrip(".")
-#     client.load_extension(f'{cog}')
+cogs = get_extensions('./bot/Cogs')
+for entry in cogs:
+    cog = entry.replace("/", ".").lstrip(".")
+    client.load_extension(f'{cog}')
 
 
-client.load_extension('bot.Cogs.setup')
+# client.load_extension('bot.Cogs.setup')
+# client.load_extension('bot.Cogs.Moderation.infractions')
+# client.load_extension('bot.Cogs.CustomHelpCommand')
 
 
 with open('token.txt', 'r') as token_file:

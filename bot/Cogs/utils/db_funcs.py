@@ -83,3 +83,11 @@ def get_from_guild(guild_id, needed_value):
                     )
     rv = dict(c.fetchone())
     return rv[needed_value]
+
+def update_in_guild(guild_id, column, updated_value):
+    c.execute(f"""UPDATE server_specific
+                SET {column}=:new_val""",
+                {
+                    'new_val': updated_value
+                })
+    conn.commit()

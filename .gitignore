@@ -1,8 +1,8 @@
 .vscode
 *.db
 *.txt
+*.json
 *.code-workspace
 
 __pycache__/
 __init__.py
-*.json

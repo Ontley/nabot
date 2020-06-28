@@ -63,7 +63,7 @@ class Infractions(commands.Cog):
                 def check(reaction, user):
                     return str(reaction) == '✔' and user.id == admin_id and reaction.message.id == empty_reason_question.id
                 await self.client.wait_for('reaction_add', check=check, timeout=60)
-                await empty_reason_question.clear_reactions()
+                await empty_reason_question.delete()
                 reason = 'No reason given'
             except asyncio.TimeoutError:
                 await ctx.send('Not adding infraction without confirmation for empty reason')
@@ -93,7 +93,7 @@ class Infractions(commands.Cog):
         # for user_id in user_ids:
         #     user = ctx.guild.get_member(int(user_id))
         #     await user.remove_roles(mute_role)
-        
+
     @commands.Cog.listener()
     async def on_member_join(self, ctx):
         '''This reapplies mutes the user had if they left and rejoined'''
@@ -109,7 +109,6 @@ class Infractions(commands.Cog):
     async def disable_expired_infractions(self):
         '''Checks if any infractions have expired every 5 seconds because I don't want to break my PC by running asyncio.sleep 500 times'''
         expired_infractions = db_funcs.get_expired_infractions()
-        print(expired_infractions)
 
         if expired_infractions:
             for infraction in expired_infractions:
