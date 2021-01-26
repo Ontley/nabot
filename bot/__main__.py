@@ -1,19 +1,16 @@
-import discord
-import sqlite3
-from discord.ext import commands
 from os import listdir
 from os.path import isdir
-from bot.Cogs.utils import db_funcs
 
 
 '''Creates all the db tables necessary for the bot if they don't already exist'''
-db_funcs.create_tables()
+
 
 async def get_prefix(client, message):
     return db_funcs.get_from_guild(message.guild.id, 'prefix')
 
-client = commands.Bot(command_prefix = get_prefix)
-client.remove_command('help')
+# client = commands.Bot(command_prefix=get_prefix)
+# client.remove_command('help')
+
 
 def get_extensions(directory):
     '''Gets a list of the cogs from the bot/Cogs folder'''
@@ -27,10 +24,12 @@ def get_extensions(directory):
                 extensions.append(entry_path[: -3])
     return extensions
 
+
 cogs = get_extensions('./bot/Cogs')
 for entry in cogs:
     cog = entry.replace("/", ".").lstrip(".")
-    client.load_extension(f'{cog}')
+    print(cog)
+    # client.load_extension(f'{cog}')
 
 
 # client.load_extension('bot.Cogs.setup')

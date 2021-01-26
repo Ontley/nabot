@@ -29,6 +29,15 @@ def create_tables():
         moderator_role_ids text
     )""")
 
+    c.execute("""CREATE TABLE IF NOT EXISTS user_specific (
+        user_id integer,
+        polls integer,
+        total_poll_votes integer,
+        commands integer,
+        xp integer,
+        level integer
+    )""")
+
 
 def guild_init(guild_id):
     c.execute("""INSERT INTO server_specific(guild_id, prefix, mute_role_id, voice_mute_role_id, admin_role_ids, moderator_role_ids) 
@@ -58,12 +67,10 @@ def get_expired_infractions():
                 WHERE active=1 AND (expires < datetime('now'))
                 """)
     found = c.fetchall()
-    rv = []
-    for infraction in found:
-        rv.append(dict(infraction))
-    return rv
+    return [dict(infraction) for infraction in found]
 
-def grab_user_infractions(user_id):
+
+def grab_active_user_infractions(user_id):
     '''Gets a user's active mute (can't be more than one) from the db'''
     c.execute("""SELECT * 
                 FROM infractions 

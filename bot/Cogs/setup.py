@@ -1,5 +1,4 @@
 import sqlite3
-import discord
 from discord.ext import commands
 import discord.utils as utils
 from bot.Cogs.Moderation import infractions
@@ -13,6 +12,7 @@ from os import getcwd
 
 class Setup(commands.Cog):
     '''Server setup commands'''
+
     def __init__(self, client):
         self.client = client
         self.conn = sqlite3.connect('discord_bot.db')
@@ -39,7 +39,7 @@ class Setup(commands.Cog):
         except ValueError:
             await ctx.send('That is not a valid role id!')
             return
-            
+
         if m_role_id:
             db_funcs.update_in_guild(ctx.guild.id, 'mute_role_id', m_role_id)
             await ctx.send(f'Set role id {m_role_id} as mute role')
@@ -66,14 +66,17 @@ class Setup(commands.Cog):
             return
 
         if new_admin_role_ids:
-            curr_admin_role_ids = db_funcs.get_from_guild(ctx.guild.id, 'admin_role_ids')
+            curr_admin_role_ids = db_funcs.get_from_guild(
+                ctx.guild.id, 'admin_role_ids')
             if curr_admin_role_ids != '0':
                 new_admin_role_ids = f'{curr_admin_role_ids} {new_admin_role_ids}'
 
-            db_funcs.update_in_guild(ctx.guild.id, 'admin_role_ids', new_admin_role_ids)
+            db_funcs.update_in_guild(
+                ctx.guild.id, 'admin_role_ids', new_admin_role_ids)
 
         else:
-            curr_admin_role_ids = db_funcs.get_from_guild(ctx.guild.id, 'admin_role_ids').split(' ')
+            curr_admin_role_ids = db_funcs.get_from_guild(
+                ctx.guild.id, 'admin_role_ids').split(' ')
             role_names = []
             for role_id in curr_admin_role_ids:
                 role = ctx.guild.get_role(int(role_id))
@@ -96,7 +99,7 @@ class Setup(commands.Cog):
             if ctx.author == ctx.guild.owner:
                 db_funcs.update_in_guild(ctx.guild.id, 'prefix', new_prefix)
                 await ctx.send(f'The new server prefix is: {new_prefix}')
-                
+
             else:
                 await ctx.send('You don\'t have the required permissions to change the server command prefix')
 
@@ -113,9 +116,9 @@ class Setup(commands.Cog):
     async def on_guild_remove(self, guild):
         '''Remove the guild and it's prefix from the db because space'''
         self.c.execute("""DELETE FROM server_specific WHERE guild_id=:id""",
-                        {
-                            'id': guild.id
-                        })
+                       {
+                           'id': guild.id
+                       })
         self.conn.commit()
         with open(f'{getcwd()}\\bot\\guild_log.json', 'r+') as guild_log:
             guilds_inits = json.load(guild_log)

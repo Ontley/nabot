@@ -39,12 +39,12 @@ class Miscellaneous(commands.Cog):
         with open(filepath, 'r') as json_file:
             nword_count = json.load(json_file)
 
-        for targ in targets:
-            if targ in nword_count:
-                nwords = nword_count[targ.id]
-                await ctx.send(f'{targ.display_name} said the n-word {nwords} times')
+        for target in targets:
+            if target in nword_count:
+                nwords = nword_count[target.id]
+                await ctx.send(f'{target.display_name} said the n-word {nwords} times')
             else:
-                await ctx.send(f'{targ.display_name} ain\'t even said the n-word')
+                await ctx.send(f'{target.display_name} ain\'t even said the n-word')
 
     @commands.command(aliases = ['neisplatise'], category='all', cls=Command)
     async def isplatise(self, ctx):

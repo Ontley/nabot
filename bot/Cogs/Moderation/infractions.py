@@ -88,7 +88,7 @@ class Infractions(commands.Cog):
         print('got into unmute')
         # mute_role_id = db_funcs.get_from_guild(ctx.guild.id, 'mute_role_id')
         # mute_role = ctx.guild.get_role(int(mute_role_id))
-        
+
         # user_ids = findall(r'\d{18}', ctx.message.content)
         # for user_id in user_ids:
         #     user = ctx.guild.get_member(int(user_id))
@@ -97,7 +97,7 @@ class Infractions(commands.Cog):
     @commands.Cog.listener()
     async def on_member_join(self, ctx):
         '''This reapplies mutes the user had if they left and rejoined'''
-        active_mute = db_funcs.grab_user_infractions(ctx.author.id)
+        active_mute = db_funcs.grab_active_user_infractions(ctx.author.id)
         if active_mute:
             g_id = ctx.guild.id
             u_id = ctx.author.id
@@ -105,11 +105,10 @@ class Infractions(commands.Cog):
             reason = f'REAPPLIED ON REJOIN: \'{active_mute["reason"]}\''
             await self.add_infraction(ctx.message.id, g_id, u_id, self.client.id, 'mute', duration, reason)
 
-    @tasks.loop(seconds=5.0)
+    @tasks.loop(seconds=5.0, reconnect=True)
     async def disable_expired_infractions(self):
-        '''Checks if any infractions have expired every 5 seconds because I don't want to break my PC by running asyncio.sleep 500 times'''
+        '''Checks if any infractions have expired every 5 seconds because I don't want to break my PC by running asyncio.sleep 500 timers'''
         expired_infractions = db_funcs.get_expired_infractions()
-
         if expired_infractions:
             for infraction in expired_infractions:
                 guild = await self.client.fetch_guild(infraction['guild_id'])

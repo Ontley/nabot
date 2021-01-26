@@ -8,6 +8,7 @@ import asyncio
 
 class Poll:
     '''Poll object because there's a lot here'''
+
     def __init__(self, title, options, _id, author, channel, duration, anon, allow_multi):
         self.id = _id
         self.title = title
@@ -16,22 +17,23 @@ class Poll:
         self.author = author
         self.channel = channel
         self.duration = duration
-        self.anon = anon 
+        self.anon = anon
         self.allow_multi = allow_multi
         self.all_votes = {}
         self.total_votes = 0
         embed = discord.Embed(
-            title = f'Question: {title}',
-            description = f'Lasts for {shorten_time(duration)}\nid {_id}',
-            colour = 16747116
-            )
+            title=f'Question: {title}',
+            description=f'Lasts for {shorten_time(duration)}\nid {_id}',
+            colour=16747116
+        )
         embed.set_author(
             name=f'Poll created by {author.display_name}',
             icon_url=author.avatar_url
-            )
+        )
 
         for index, option in enumerate(self.options):
-            embed.add_field(name=f'Option {index+1}', value=f'{option}', inline=False)
+            embed.add_field(
+                name=f'Option {index+1}', value=f'{option}', inline=False)
         self.embed = embed
 
     async def add_vote(self, user, option):
@@ -39,7 +41,8 @@ class Poll:
         if self.allow_multi:
             if user.id in self.all_votes:
                 if option in self.all_votes[user.id]:
-                    print(f'User {user.display_name} already voted for option {option}')
+                    print(
+                        f'User {user.display_name} already voted for option {option}')
                     return
 
                 else:
@@ -53,7 +56,8 @@ class Poll:
 
         else:
             if user.id in self.all_votes:
-                print(f'Poll doesn\'t allow multivote, user {user.display_name} already voted')
+                print(
+                    f'Poll doesn\'t allow multivote, user {user.display_name} already voted')
                 return
             else:
                 self.all_votes[user.id] = [option]
@@ -65,26 +69,24 @@ class Poll:
         self.options_stats[option] -= 1
         self.total_votes -= 1
 
-
     async def send_poll(self):
         '''Sends the poll in it's channel'''
-        self.message = await self.channel.send(embed = self.embed)
+        self.message = await self.channel.send(embed=self.embed)
         if len(self.options) <= 10:
             for i in range(len(self.options)):
                 await self.message.add_reaction(NUMBER_EMOJIS[i])
 
-
     async def end(self):
         '''Ends the poll, sending an embed with the results'''
         end_embed = discord.Embed(
-            title = f'Poll ended: {self.title}',
-            colour = 16747116
-            )
+            title=f'Poll ended: {self.title}',
+            colour=16747116
+        )
         end_embed.set_author(
             name=f'Poll created by {self.author.display_name}',
             icon_url=self.author.avatar_url
-            )
-        
+        )
+
         for i in range(len(self.options)):
             option_votes = self.options_stats[i]
             try:
@@ -93,9 +95,9 @@ class Poll:
                 option_percentage = 0
 
             end_embed.add_field(
-                name = f'Option {i+1} ({option_votes} votes, {option_percentage}%)',
-                value = self.options[i],
-                inline = False
+                name=f'Option {i+1} ({option_votes} votes, {option_percentage}%)',
+                value=self.options[i],
+                inline=False
             )
         await self.channel.send(embed=end_embed)
 
@@ -134,7 +136,8 @@ class Polls(commands.Cog):
         duration = 600
         anon = '-a' in msgtext or '-anon' in msgtext
         allow_multi = '-m' in msgtext or '-multiple' in msgtext
-        poll = Poll(title, options, ctx.message.id,  ctx.author, ctx.channel, duration, anon, allow_multi)
+        poll = Poll(title, options, ctx.message.id,  ctx.author,
+                    ctx.channel, duration, anon, allow_multi)
         await self.poll_handler(poll, ctx)
 
     @commands.command(category='all', cls=Command)
@@ -155,7 +158,7 @@ class Polls(commands.Cog):
     async def forceend(self, ctx, poll_id):
         '''Allows an admin to force end a poll given it's ID
         Usage:
-        `{prefix}foreend 726826227717111818`'''
+        `{prefix}forceend 726826227717111818`'''
         try:
             poll_id = int(poll_id)
         except ValueError:
